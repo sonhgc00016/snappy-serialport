@@ -67,20 +67,29 @@ port.on('open', () => {
 });
 
 port.on('data', data => {
-  const asciiData = data.toString('ascii');
-  const removedSpecialChar = asciiData.replace(/[^(a-zA-Z0-9\+)]/g, '');
-  const regex = /((\+03EA)|(\+EA)|(\+A)|(03EA)|(03AA))\d{1,5}/g;
-  let catchedData = (removedSpecialChar.match(regex) && removedSpecialChar.match(regex)[0]) || '';
-  catchedData = catchedData && catchedData.replace(/((\+03EA)|(\+EA)|(\+A)|(03EA))/g, '');
-  catchedData = catchedData && catchedData.replace(/0{1,}$/g, '');
-  catchedData = catchedData && parseInt(catchedData);
+  const utf8Data = data.toString('utf8');
+
+  const regex = /\d{7,11}/g; // Tìm số có 7 đến 11 chữ số
+  let catchedData = (utf8Data.match(regex) && utf8Data.match(regex)[0]) || '';
+
   if (catchedData && trackingId) {
+    catchedData = catchedData.replace(/0{1,}$/g, ''); // Xóa hết số 0 ở cuối
+    const numberOfZerosToRemove = parseInt(catchedData.substr(catchedData.length - 1)); // Lấy ra số số 0 phải bỏ đi bằng số cuối cùng
+    catchedData = catchedData.substr(0, catchedData.length - 1); // Xóa số cuối
+
+    catchedData = catchedData.substr(0, catchedData.length - numberOfZerosToRemove); // Bỏ số số 0 phải bỏ đi
+    catchedData = parseInt(catchedData);
+
     io.sockets.emit(trackingId, catchedData);
     console.log(`Sent ${catchedData} to ${trackingId}`);
     SerialPort.serialport.flush((err, results) => {});
     io.sockets.emit('close');
   }
 });
+
+splitValue = (value, index) => {
+  return value.substring(0, index) + ',' + value.substring(index);
+};
 
 port.on('close', () => {
   console.log('Serial port disconnected.');
