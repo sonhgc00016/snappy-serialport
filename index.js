@@ -71,8 +71,6 @@ port.on('data', data => {
 
   const regex = /\d{7,11}/g; // Tìm số có 7 đến 11 chữ số
   let catchedData = (utf8Data.match(regex) && utf8Data.match(regex)[0]) || '';
-  console.log(catchedData);
-
   if (catchedData && trackingId) {
     catchedData = catchedData.substr(1) // Xóa số đầu
     catchedData = catchedData.replace(/0{1,}$/g, ''); // Xóa hết số 0 ở cuối
