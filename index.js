@@ -82,6 +82,7 @@ port.on('data', data => {
 
     if (catchedData > 0) {
       io.sockets.emit(trackingId, catchedData);
+      console.log(`Orginal: ${utf8Data}`);
       console.log(`Sent ${catchedData} to ${trackingId}`);
       io.sockets.emit('close');
       trackingId = null;
