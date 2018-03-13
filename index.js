@@ -72,13 +72,9 @@ port.on('data', data => {
   const regex = /\d{7,11}/g; // Tìm số có 7 đến 11 chữ số
   let catchedData = (utf8Data.match(regex) && utf8Data.match(regex)[0]) || '';
   if (catchedData && trackingId) {
-    catchedData = catchedData.substr(1) // Xóa số đầu
-    catchedData = catchedData.replace(/0{1,}$/g, ''); // Xóa hết số 0 ở cuối
-    const numberOfZerosToRemove = parseInt(catchedData.substr(catchedData.length - 1)); // Lấy ra số số 0 phải bỏ đi bằng số cuối cùng
-    catchedData = catchedData.substr(0, catchedData.length - 1); // Xóa số cuối
+    if (catchedData.length > 7) catchedData = catchedData.substr(1); // Xóa số đầu
 
-    catchedData = catchedData.substr(0, catchedData.length - numberOfZerosToRemove); // Bỏ số số 0 phải bỏ đi
-    catchedData = parseInt(catchedData);
+    catchedData = parseCatchedData(catchedData);
 
     if (catchedData > 0) {
       io.sockets.emit(trackingId, catchedData);
@@ -90,8 +86,13 @@ port.on('data', data => {
   }
 });
 
-splitValue = (value, index) => {
-  return value.substring(0, index) + ',' + value.substring(index);
+const parseCatchedData = catchedData => {
+  catchedData = catchedData.replace(/0{1,}$/g, ''); // Xóa hết số 0 ở cuối
+  const numberOfZerosToRemove = parseInt(catchedData.substr(catchedData.length - 1)); // Lấy ra số số 0 phải bỏ đi bằng số cuối cùng
+  catchedData = catchedData.substr(0, catchedData.length - 1); // Xóa số cuối
+
+  catchedData = catchedData.substr(0, catchedData.length - numberOfZerosToRemove); // Bỏ số số 0 phải bỏ đi
+  return parseInt(catchedData);
 };
 
 port.on('close', () => {
