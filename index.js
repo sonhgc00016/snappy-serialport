@@ -4,23 +4,22 @@ const io = require('socket.io')(http);
 const tcpPort = process.env.PORT || 9600;
 
 const SerialPort = require('serialport');
+const portName = process.argv[2] || 'COM5';
+let socket;
 
-const port = new SerialPort('COM5', err => {
+const port = new SerialPort(portName, err => {
   if (err) {
     return console.log('Error: ', err.message);
   }
 
   return {
-    baudrate: 9600,
+    baudRate: 9600,
     dataBits: 8,
     parity: 'none',
     stopBits: 1,
     flowControl: false,
   };
 });
-
-const byteParser = new SerialPort.parsers.ByteLength({ length: 1 });
-port.pipe(byteParser);
 
 /* ===========================================
 *
@@ -49,14 +48,8 @@ io.on('connection', socket => {
    * Socket listener to determine whether or not to send
    * values to web application.
    */
-  socket.on('message', msg => {
-    console.log('Tracking: ', msg);
-    const regexTrackingId = /(S|E)[0-9]{8,10}/;
-    if (regexTrackingId.test(msg)) {
-      io.sockets.emit(msg, 200);
-      console.log(`Sent to ${msg}`);
-    }
-  });
+
+  socket = socket;
 });
 
 /* ===========================================
@@ -69,22 +62,25 @@ port.on('open', () => {
   console.log('Port is open!');
 });
 
-// Switches the port into "flowing mode"
 port.on('data', data => {
-  console.log('Data:', data);
-});
-
-// Read data that is available but keep the stream from entering "flowing mode"
-port.on('readable', () => {
-  console.log('Data:', port.read());
-});
-
-/**
- * listen to the bytes as they are parsed from the parser.
- */
-byteParser.on('data', data => {
-  console.log('Data:', data);
-  io.sockets.emit('New message', 'message');
+  const asciiData = data.toString('ascii');
+  const removedSpecialChar = asciiData.replace(/[^(a-zA-Z0-9\+)]/g, '');
+  const regex = /((\+03EA)|(\+EA)|(\+A)|(03EA))\d{1,5}/g;
+  let catchedData = (removedSpecialChar.match(regex) && removedSpecialChar.match(regex)[0]) || '';
+  catchedData = catchedData && catchedData.replace(/((\+03EA)|(\+EA)|(\+A)|(03EA))/g, '');
+  catchedData = catchedData && catchedData.replace(/0{1,}$/g, '');
+  catchedData = catchedData && parseInt(catchedData);
+  if (catchedData) {
+    console.log(catchedData);
+    socket.on('message', msg => {
+      console.log('Tracking: ', msg);
+      const regexTrackingId = /(S|E)[0-9]{8,10}/;
+      if (regexTrackingId.test(msg)) {
+        io.sockets.emit(msg, 200);
+        console.log(`Sent to ${msg}`);
+      }
+    });
+  }
 });
 
 port.on('close', () => {
