@@ -74,6 +74,7 @@ port.on('data', data => {
   console.log(catchedData);
 
   if (catchedData && trackingId) {
+    catchedData = catchedData.substr(1) // Xóa số đầu
     catchedData = catchedData.replace(/0{1,}$/g, ''); // Xóa hết số 0 ở cuối
     const numberOfZerosToRemove = parseInt(catchedData.substr(catchedData.length - 1)); // Lấy ra số số 0 phải bỏ đi bằng số cuối cùng
     catchedData = catchedData.substr(0, catchedData.length - 1); // Xóa số cuối
