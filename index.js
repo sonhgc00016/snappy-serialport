@@ -83,6 +83,7 @@ port.on('data', data => {
     io.sockets.emit(trackingId, catchedData);
     console.log(`Sent ${catchedData} to ${trackingId}`);
     io.sockets.emit('close');
+    trackingId = null;
   }
 });
 
