@@ -75,7 +75,7 @@ port.on('data', data => {
   catchedData = catchedData && catchedData.replace(/0{1,}$/g, '');
   catchedData = catchedData && parseInt(catchedData);
   if (catchedData && trackingId) {
-    io.sockets.emit(msg, catchedData);
+    io.sockets.emit(trackingId, catchedData);
     console.log(`Sent ${catchedData} to ${trackingId}`);
   }
 });
