@@ -68,16 +68,11 @@ port.on('open', () => {
 
 port.on('data', data => {
   const asciiData = data.toString('ascii');
-  console.log(asciiData);
   const removedSpecialChar = asciiData.replace(/[^(a-zA-Z0-9\+)]/g, '');
-  console.log(removedSpecialChar);
-  const regex = /((\+03EA)|(\+EA)|(\+A)|(03EA))\d{1,5}/g;
+  const regex = /((\+03EA)|(\+EA)|(\+A)|(03EA)|(03AA))\d{1,5}/g;
   let catchedData = (removedSpecialChar.match(regex) && removedSpecialChar.match(regex)[0]) || '';
-  console.log(catchedData);
   catchedData = catchedData && catchedData.replace(/((\+03EA)|(\+EA)|(\+A)|(03EA))/g, '');
-  console.log(catchedData);
   catchedData = catchedData && catchedData.replace(/0{1,}$/g, '');
-  console.log(catchedData);
   catchedData = catchedData && parseInt(catchedData);
   if (catchedData && trackingId) {
     io.sockets.emit(trackingId, catchedData);
