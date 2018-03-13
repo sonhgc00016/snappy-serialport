@@ -5,7 +5,7 @@ const tcpPort = process.env.PORT || 9600;
 
 const SerialPort = require('serialport');
 const portName = process.argv[2] || 'COM5';
-let socket;
+let trackingId;
 
 const port = new SerialPort(portName, err => {
   if (err) {
@@ -49,7 +49,11 @@ io.on('connection', socket => {
    * values to web application.
    */
 
-  socket = socket;
+  socket.on('message', msg => {
+    console.log('Tracking: ', msg);
+    const regexTrackingId = /(S|E)[0-9]{8,10}/;
+    if (regexTrackingId.test(msg)) trackingId = msg;
+  });
 });
 
 /* ===========================================
@@ -70,16 +74,9 @@ port.on('data', data => {
   catchedData = catchedData && catchedData.replace(/((\+03EA)|(\+EA)|(\+A)|(03EA))/g, '');
   catchedData = catchedData && catchedData.replace(/0{1,}$/g, '');
   catchedData = catchedData && parseInt(catchedData);
-  if (catchedData) {
-    console.log(catchedData);
-    socket.on('message', msg => {
-      console.log('Tracking: ', msg);
-      const regexTrackingId = /(S|E)[0-9]{8,10}/;
-      if (regexTrackingId.test(msg)) {
-        io.sockets.emit(msg, 200);
-        console.log(`Sent to ${msg}`);
-      }
-    });
+  if (catchedData && trackingId) {
+    io.sockets.emit(msg, catchedData);
+    console.log(`Sent ${catchedData} to ${trackingId}`);
   }
 });
 
