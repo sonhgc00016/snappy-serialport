@@ -71,6 +71,7 @@ port.on('data', data => {
 
   const regex = /\d{7,11}/g; // Tìm số có 7 đến 11 chữ số
   let catchedData = (utf8Data.match(regex) && utf8Data.match(regex)[0]) || '';
+  console.log(catchedData);
 
   if (catchedData && trackingId) {
     catchedData = catchedData.replace(/0{1,}$/g, ''); // Xóa hết số 0 ở cuối
@@ -80,10 +81,12 @@ port.on('data', data => {
     catchedData = catchedData.substr(0, catchedData.length - numberOfZerosToRemove); // Bỏ số số 0 phải bỏ đi
     catchedData = parseInt(catchedData);
 
-    io.sockets.emit(trackingId, catchedData);
-    console.log(`Sent ${catchedData} to ${trackingId}`);
-    io.sockets.emit('close');
-    trackingId = null;
+    if (catchedData > 0) {
+      io.sockets.emit(trackingId, catchedData);
+      console.log(`Sent ${catchedData} to ${trackingId}`);
+      io.sockets.emit('close');
+      trackingId = null;
+    }
   }
 });
 
