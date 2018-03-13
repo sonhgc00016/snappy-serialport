@@ -82,7 +82,6 @@ port.on('data', data => {
 
     io.sockets.emit(trackingId, catchedData);
     console.log(`Sent ${catchedData} to ${trackingId}`);
-    SerialPort.serialport.flush((err, results) => {});
     io.sockets.emit('close');
   }
 });
