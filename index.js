@@ -4,7 +4,7 @@ const io = require('socket.io')(http);
 const tcpPort = process.env.PORT || 9600;
 
 const SerialPort = require('serialport');
-const portName = process.argv[2] || 'COM5';
+const portName = process.argv[2] || 'COM1';
 let trackingId;
 
 const port = new SerialPort(portName, err => {

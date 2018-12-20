@@ -4,7 +4,7 @@
   "main": "index.js",
   "dependencies": {
     "express": "^4.14.1",
-    "serialport": "^6.0.0",
+    "serialport": "^7.1.1",
     "socket.io": "^1.7.2"
   },
   "devDependencies": {},
